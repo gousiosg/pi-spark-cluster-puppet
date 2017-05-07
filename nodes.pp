@@ -1,4 +1,19 @@
+class defaults {
+  exec { "apt-update": command => "/usr/bin/apt-get update" }
+
+   package { 'vim': ensure => present }
+   package { 'git-core': ensure => present }
+   package { 'curl' : ensure => present }
+   package { 'ntp' : ensure => present }
+
+   alternatives { 'editor':
+     path => '/usr/bin/vim.basic',
+   }
+}
+
 node 'master' {
+
+  include defaults
 
   network::interface { 'wlan0':
     wpa_ssid => '',
@@ -29,5 +44,17 @@ node 'master' {
   dnsmasq::dhcpstatic {
     'slave1': mac => 'b8:27:eb:cf:5e:3d', ip  => '10.0.0.2';
   }
+
+  package {'iptables-persistent': ensure => present}
+
+  firewall { '100 snat for network internal':
+    chain    => 'POSTROUTING',
+    jump     => 'MASQUERADE',
+    proto    => 'all',
+    outiface => 'wlan0',
+    source   => '10.0.0.0/24',
+    table    => 'nat'
+  } ->
+  exec { 'enable ip_forwarding': command => '/bin/echo "net.ipv4.ip_forward=1" > /etc/sysctl.conf ; /sbin/sysctl -w net.ipv4.ip_forward="1"' }
 }
 
