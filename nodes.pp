@@ -1,20 +1,31 @@
 class defaults {
   exec { "apt-update": command => "/usr/bin/apt-get update" }
 
-   package { 'vim': ensure => present }
-   package { 'git-core': ensure => present }
-   package { 'curl' : ensure => present }
-   package { 'ntp' : ensure => present }
+  package { 'vim': ensure => present }
+  package { 'git-core': ensure => present }
+  package { 'curl' : ensure => present }
+  package { 'ntp' : ensure => present }
+  package { 'dnsutils' : ensure => present }
+  package { 'oracle-java8-jdk' : ensure => present }
 
-   alternatives { 'editor':
-     path => '/usr/bin/vim.basic',
-   }
+  #alternatives { 'editor':
+  #  path => '/usr/bin/vim.basic',
+  #}
+
+  ssh_authorized_key { "ssh-key-pi":
+      user  => "pi",
+      ensure => present,
+      type   => "ssh-rsa",
+      key    => "AAAAB3NzaC1yc2EAAAABIwAAAQEAtyYEI3bTfWntzykFiAWXq6yd7jU1w/ON2DtJ8U28wH1nTsy8Y1zR7nWuTbeTHLhWMe4el/cTn/SW6c8WGJGkE8Xkir6Y5XOrJ3BSj/4EwnqnYt8SyM0ZvLo8sDOPqhTkYQhA4ZNUykQJsAvDRMrEvdqsnjuZtqDi/tru8RvPlo/ChmL2CHCcvGyHWsAixCqgUS6cjz+TzuBePpXdYvrTjIY+6GJDLQ4UIpaJcc2iwLoWS4TEbyaPf5+2qNBwZ2/bQC5u2aosVuD9K/q1aRpvNTqil+J2Ip/irimK2tBPLcf5BdLecnxObyx4GiZ49T8T9YghsoM9Z4a56i0kN0DOkQ==",
+      name   => "pi@master"
+  }
 }
 
 node 'master' {
 
   include defaults
 
+  # Configure networking
   network::interface { 'wlan0':
     wpa_ssid => '',
     wpa_psk => '',
@@ -43,8 +54,20 @@ node 'master' {
 
   dnsmasq::dhcpstatic {
     'slave1': mac => 'b8:27:eb:cf:5e:3d', ip  => '10.0.0.2';
+    'slave2': mac => 'b8:27:eb:25:8b:60', ip => '10.0.0.3';
+    'slave3': mac => 'b8:27:eb:b9:bc:e9', ip => '10.0.0.4';
+    'slave4': mac => 'b8:27:eb:ca:ed:9a', ip => '10.0.0.5';
   }
 
+  dnsmasq::address {
+    "master.spark": ip => '10.0.0.1';
+    "slave1.spark": ip => '10.0.0.2';
+    "slave2.spark": ip => '10.0.0.3';
+    "slave3.spark": ip => '10.0.0.4';
+    "slave4.spark": ip => '10.0.0.5';
+  }
+
+  # NAT config
   package {'iptables-persistent': ensure => present}
 
   firewall { '100 snat for network internal':
@@ -56,5 +79,13 @@ node 'master' {
     table    => 'nat'
   } ->
   exec { 'enable ip_forwarding': command => '/bin/echo "net.ipv4.ip_forward=1" > /etc/sysctl.conf ; /sbin/sysctl -w net.ipv4.ip_forward="1"' }
+
+  # Puppet master installation
+  #package {'puppetmaster-passenger': ensure => present} ->
+  #tidy {'remove puppet default certificates', path => '/var/lib/puppet/ssl', matches => [ '*' ]} 
+
 }
 
+node 'slave1.spark' {
+  include defaults
+}
