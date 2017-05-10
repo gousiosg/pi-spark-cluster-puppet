@@ -7,6 +7,7 @@ class defaults {
   package { 'ntp' : ensure => present }
   package { 'dnsutils' : ensure => present }
   package { 'oracle-java8-jdk' : ensure => present }
+  package { 'htop' : ensure => present }
   package { 'nmon' : ensure => present }
 
   #alternatives { 'editor':

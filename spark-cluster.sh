@@ -68,12 +68,12 @@ vi /etc/puppet/puppet.conf
 sudo service puppetmaster restart
 
 # On each puppet node
-# 1. set host name to slaveX.spark
+## 1. set host name to slaveX.spark
 passwd pi
 echo "slave1.spark"|sudo tee /etc/hostname
 sudo reboot
 
-# 2. Install and configure puppet
+## 2. Install and configure puppet
 sudo apt-get update
 sudo apt-get install puppet
 sudo bash
@@ -99,5 +99,5 @@ sudo service puppet restart
 sudo puppet agent --enable
 sudo puppet agent --test
 
-# 3. On the puppet master, sign the client certificates
+## 3. On the puppet master, sign the client certificates
 sudo puppet cert sign --all
