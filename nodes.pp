@@ -7,6 +7,7 @@ class defaults {
   package { 'ntp' : ensure => present }
   package { 'dnsutils' : ensure => present }
   package { 'oracle-java8-jdk' : ensure => present }
+  package { 'nmon' : ensure => present }
 
   #alternatives { 'editor':
   #  path => '/usr/bin/vim.basic',
@@ -81,11 +82,37 @@ node 'master' {
   exec { 'enable ip_forwarding': command => '/bin/echo "net.ipv4.ip_forward=1" > /etc/sysctl.conf ; /sbin/sysctl -w net.ipv4.ip_forward="1"' }
 
   # Puppet master installation
-  #package {'puppetmaster-passenger': ensure => present} ->
-  #tidy {'remove puppet default certificates', path => '/var/lib/puppet/ssl', matches => [ '*' ]} 
+  package {'puppetmaster-passenger': ensure => present}
+  file { "/etc/puppet/files":
+    ensure => 'link',
+    target => '/home/pi/pi-spark-cluster-puppet/files'
+  }
 
+  file { "/etc/puppet/manifests/site.pp":
+    ensure => 'link',
+    target => '/home/pi/pi-spark-cluster-puppet/nodes.pp'
+  }
+
+  # LCD screen
+  file { "/boot/cmdline.txt":
+    source => "puppet:///files/cmdline.txt",
+    group => "root",
+    owner => "root"
+  }
+
+  file { "/boot/config.txt":
+    source => "puppet:///files/config.txt",
+    group => "root",
+    owner => "root"
+  }
+
+  file { "/boot/overlays/waveshare35a-overlay.dtb":
+    source => "puppet:///files/waveshare35a-overlay.dtb",
+    group => "root",
+    owner => "root"
+  }
 }
 
-node 'slave1.spark' {
+node /slave[0-9]*\.spark/ {
   include defaults
 }
