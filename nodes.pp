@@ -112,6 +112,7 @@ node 'master' {
     group => "root",
     owner => "root"
   }
+  package {'tmux': ensure => present}
 }
 
 node /slave[0-9]*\.spark/ {

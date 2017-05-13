@@ -3,7 +3,7 @@
 for i in `seq 1 4`;
 do
   echo "Shutting down slave$i"
-  ssh slave$i "sudo poweroff"
+  ssh "slave$i.spark" "sudo poweroff"
 done
 
 sudo poweroff
