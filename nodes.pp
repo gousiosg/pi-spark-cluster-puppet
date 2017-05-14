@@ -23,9 +23,34 @@ class defaults {
   }
 }
 
+class my::hadoop {
+    class { 'cdh::hadoop':
+        # Logical Hadoop cluster name.
+        cluster_name       => 'bdp',
+        # Must pass an array of hosts here, even if you are
+        # not using HA and only have a single NameNode.
+        namenode_hosts     => ['master.spark'],
+        datanode_mounts    => [
+            '/var/lib/hadoop/data/a'
+        ],
+        # You can also provide an array of dfs_name_dirs.
+        dfs_name_dir       => '/var/lib/hadoop/name',
+    }
+}
+
+
+class my::hadoop::master inherits my::hadoop {
+    include cdh::hadoop::master
+}
+
+class my::hadoop::worker inherits my::hadoop {
+    include cdh::hadoop::worker
+}
+
 node 'master' {
 
   include defaults
+  include my::hadoop::master
 
   # Configure networking
   network::interface { 'wlan0':
@@ -123,4 +148,6 @@ node 'master' {
 
 node /slave[0-9]*\.spark/ {
   include defaults
+  include my::hadoop::worker
 }
+
