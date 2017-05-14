@@ -1,0 +1,13 @@
+[Unit]
+Description=Cluster monitoring on TTY1
+
+[Service]
+Type=simple
+ExecStart=/home/pi/cluster/monitor
+ExecStop=/bin/kill -HUP ${MAINPID}
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty1
+
+[Install]
+WantedBy=getty.target

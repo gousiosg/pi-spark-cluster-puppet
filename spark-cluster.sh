@@ -42,14 +42,12 @@ echo "master.spark"|sudo tee /etc/hostname
 
 ## Install and config puppet
 sudo apt-get install puppet
-git@github.com:gousiosg/pi-spark-cluster-puppet.git
+git@github.com:gousiosg/pi-spark-cluster-puppet.git cluster
+sudo gem install librarian-puppet
 
-puppet module install example42-network
-puppet module install puppet-alternatives
-puppet module install lex-dnsmasq
-puppet module install puppetlabs-firewall
-
-sudo puppet apply --modulepath=/home/pi/.puppet/modules/ nodes.pp
+cd cluster
+librarian-puppet install
+sudo puppet apply nodes.pp
 
 # Puppet config according to
 # https://www.digitalocean.com/community/tutorials/how-to-install-puppet-to-manage-your-server-infrastructure

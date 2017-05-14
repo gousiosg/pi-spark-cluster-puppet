@@ -10,9 +10,9 @@ class defaults {
   package { 'htop' : ensure => present }
   package { 'nmon' : ensure => present }
 
-  #alternatives { 'editor':
-  #  path => '/usr/bin/vim.basic',
-  #}
+  alternatives { 'editor':
+    path => '/usr/bin/vim.basic',
+  }
 
   ssh_authorized_key { "ssh-key-pi":
       user  => "pi",
@@ -29,14 +29,14 @@ node 'master' {
 
   # Configure networking
   network::interface { 'wlan0':
-    wpa_ssid => '',
-    wpa_psk => '',
+    wpa_ssid => 'Home2.4',
+    wpa_psk => 'giorgos-fenia-',
     enable_dhcp => true
   }
 
   network::interface { 'eth0':
     ipaddress => '10.0.0.1',
-    netmask   => '255.255.255.0',
+    netmask   => '255.255.255.0'
   }
 
   class { 'dnsmasq':
@@ -86,13 +86,19 @@ node 'master' {
   package {'puppetmaster-passenger': ensure => present}
   file { "/etc/puppet/files":
     ensure => 'link',
-    target => '/home/pi/pi-spark-cluster-puppet/files'
+    target => '/home/pi/cluster/files'
   }
 
   file { "/etc/puppet/manifests/site.pp":
     ensure => 'link',
-    target => '/home/pi/pi-spark-cluster-puppet/nodes.pp'
+    target => '/home/pi/cluster/nodes.pp'
   }
+
+  file { "/etc/puppet/modules":
+    ensure => 'link',
+    target => '/home/pi/cluster/modules'
+  }
+
 
   # LCD screen
   file { "/boot/cmdline.txt":
