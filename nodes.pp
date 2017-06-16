@@ -1,4 +1,6 @@
 class defaults {
+  include apt
+
   exec { "apt-update": command => "/usr/bin/apt-get update" }
 
   package { 'vim': ensure => present }
@@ -21,36 +23,30 @@ class defaults {
       key    => "AAAAB3NzaC1yc2EAAAABIwAAAQEAtyYEI3bTfWntzykFiAWXq6yd7jU1w/ON2DtJ8U28wH1nTsy8Y1zR7nWuTbeTHLhWMe4el/cTn/SW6c8WGJGkE8Xkir6Y5XOrJ3BSj/4EwnqnYt8SyM0ZvLo8sDOPqhTkYQhA4ZNUykQJsAvDRMrEvdqsnjuZtqDi/tru8RvPlo/ChmL2CHCcvGyHWsAixCqgUS6cjz+TzuBePpXdYvrTjIY+6GJDLQ4UIpaJcc2iwLoWS4TEbyaPf5+2qNBwZ2/bQC5u2aosVuD9K/q1aRpvNTqil+J2Ip/irimK2tBPLcf5BdLecnxObyx4GiZ49T8T9YghsoM9Z4a56i0kN0DOkQ==",
       name   => "pi@master"
   }
-}
 
-class my::hadoop {
-    class { 'cdh::hadoop':
-        # Logical Hadoop cluster name.
-        cluster_name       => 'bdp',
-        # Must pass an array of hosts here, even if you are
-        # not using HA and only have a single NameNode.
-        namenode_hosts     => ['master.spark'],
-        datanode_mounts    => [
-            '/var/lib/hadoop/data/a'
-        ],
-        # You can also provide an array of dfs_name_dirs.
-        dfs_name_dir       => '/var/lib/hadoop/name',
-    }
-}
+  $dirname = 'spark-2.1.1-bin-hadoop2.7'
+  $filename = "${dirname}.tgz"
+  $install_path = "/home/pi/"
 
+  archive { $filename:
+    ensure => present,
+    path   => "/tmp/${filename}",
+    source => "https://d3kbcqa49mib13.cloudfront.net/spark-2.1.1-bin-hadoop2.7.tgz",
+    extract      => true,
+    extract_path => $install_path,
+    creates      => "$install_path/$dirname/bin",
+    cleanup      => true,
+  }
 
-class my::hadoop::master inherits my::hadoop {
-    include cdh::hadoop::master
-}
-
-class my::hadoop::worker inherits my::hadoop {
-    include cdh::hadoop::worker
+  file { '/home/pi/spark':
+    ensure => 'link',
+    target => "$install_path/$dirname"
+  }
 }
 
 node 'master' {
 
   include defaults
-  include my::hadoop::master
 
   # Configure networking
   network::interface { 'wlan0':
@@ -148,6 +144,5 @@ node 'master' {
 
 node /slave[0-9]*\.spark/ {
   include defaults
-  include my::hadoop::worker
 }
 
