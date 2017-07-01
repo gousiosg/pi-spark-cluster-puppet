@@ -24,24 +24,50 @@ class defaults {
       name   => "pi@master"
   }
 
-  $dirname = 'spark-2.1.1-bin-hadoop2.7'
-  $filename = "${dirname}.tgz"
+  $spark_dirname = 'spark-2.1.1-bin-hadoop2.7'
+  $spark_filename = "${spark_dirname}.tgz"
+  $install_path = "/home/pi/"
+
+  archive { $filename:
+    ensure => present,
+    path   => "/tmp/${spark_filename}",
+    source => "https://d3kbcqa49mib13.cloudfront.net/spark-2.1.1-bin-hadoop2.7.tgz",
+    extract      => true,
+    extract_path => $install_path,
+    creates      => "$install_path/$spark_dirname/bin",
+    cleanup      => true,
+    user          => 'pi',
+    group         => 'pi',
+  }
+
+  file { '/home/pi/spark':
+    ensure => 'link',
+    target => "$install_path/$spark_dirname"
+  }
+
+  # Instal Hadoop for HDFS
+  $hadoop_dirname = 'hadoop-2.7.3'
+  $hadoop_filename = "${hadoop_dirname}.tgz"
   $install_path = "/home/pi/"
 
   archive { $filename:
     ensure => present,
     path   => "/tmp/${filename}",
-    source => "https://d3kbcqa49mib13.cloudfront.net/spark-2.1.1-bin-hadoop2.7.tgz",
+    source => "http://apache.40b.nl/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz"
+
     extract      => true,
     extract_path => $install_path,
     creates      => "$install_path/$dirname/bin",
     cleanup      => true,
+    user          => 'pi',
+    group         => 'pi',
   }
 
-  file { '/home/pi/spark':
+  file { '/home/pi/hadoop':
     ensure => 'link',
-    target => "$install_path/$dirname"
+    target => "$install_path/$hadoop_dirname"
   }
+
 }
 
 node 'master' {
@@ -140,9 +166,27 @@ node 'master' {
     owner => "root"
   }
   package {'tmux': ensure => present}
+
+  # spark configuration for master
+  file { "/home/pi/spark/conf/slaves":
+    source => "puppet:///files/spark-slaves"
+  }
+
+  file { "/home/pi/spark/conf/spark-env.sh":
+    source => "puppet:///files/spark-env-master.sh"
+  }
+
+  # install jupyter
+  package {'python3-pip': ensure => present} ->
+  python::pip {'jupyter': ensure => "present"}
+
 }
 
 node /slave[0-9]*\.spark/ {
   include defaults
+
+  file { "/home/pi/spark/conf/spark-env.sh":
+    source => "puppet:///files/spark-env-slave.sh"
+  }
 }
 
