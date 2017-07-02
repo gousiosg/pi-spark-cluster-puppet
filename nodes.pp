@@ -28,7 +28,7 @@ class defaults {
   $spark_filename = "${spark_dirname}.tgz"
   $install_path = "/home/pi/"
 
-  archive { $filename:
+  archive { $spark_filename:
     ensure => present,
     path   => "/tmp/${spark_filename}",
     source => "https://d3kbcqa49mib13.cloudfront.net/spark-2.1.1-bin-hadoop2.7.tgz",
@@ -48,16 +48,15 @@ class defaults {
   # Instal Hadoop for HDFS
   $hadoop_dirname = 'hadoop-2.7.3'
   $hadoop_filename = "${hadoop_dirname}.tgz"
-  $install_path = "/home/pi/"
 
-  archive { $filename:
+  archive { $hadoop_filename:
     ensure => present,
-    path   => "/tmp/${filename}",
-    source => "http://apache.40b.nl/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz"
-
+    path   => "/tmp/${hadoop_filename}",
+    source =>
+    "http://apache.40b.nl/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz",
     extract      => true,
     extract_path => $install_path,
-    creates      => "$install_path/$dirname/bin",
+    creates      => "$install_path/$hadoop_dirname/bin",
     cleanup      => true,
     user          => 'pi',
     group         => 'pi',

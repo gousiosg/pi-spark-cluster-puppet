@@ -1,0 +1,20 @@
+[Unit]
+Description=Apache Spark Master and Slave Servers
+After=network.target
+After=systemd-user-sessions.service
+After=network-online.target
+
+[Service]
+User=spark
+Type=forking
+ExecStart=/home/pi/spark/sbin/start-all.sh
+ExecStop=/home/pi/spark/sbin/stop-all.sh
+TimeoutSec=30
+Restart= on-failure
+RestartSec= 30
+StartLimitInterval=350
+StartLimitBurst=10
+
+[Install]
+WantedBy=multi-user.target
+
