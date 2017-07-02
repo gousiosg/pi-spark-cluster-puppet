@@ -176,8 +176,8 @@ node 'master' {
   }
 
   # install jupyter
-  package {'python3-pip': ensure => present} ->
-  python::pip {'jupyter': ensure => "present"}
+  #package {'python3-pip': ensure => present} ->
+  #python::pip {'jupyter': ensure => "present"}
 
 }
 
