@@ -6,4 +6,4 @@ do
   ssh "slave$i.spark" "sudo reboot"
 done
 
-sudo reboot
+#sudo reboot

@@ -67,6 +67,34 @@ class defaults {
     target => "$install_path/$hadoop_dirname"
   }
 
+  file { "/home/pi/hadoop/etc/hadoop/hadoop-env.sh":
+    source => "puppet:///files/hadoop-env.sh"
+  }
+
+  file { "/home/pi/hadoop/etc/hadoop/core-site.xml":
+    source => "puppet:///files/core-site.xml"
+  }
+
+  file { "/home/pi/hadoop/etc/hadoop/hdfs-site.xml":
+    source => "puppet:///files/hdfs-site.xml"
+  }
+
+  file { "/home/pi/hadoop/etc/hadoop/masters":
+    source => "puppet:///files/masters"
+  }
+
+  file { "/home/pi/hadoop/etc/hadoop/slaves":
+    source => "puppet:///files/slaves"
+  }
+
+  file { "/home/pi/hadoop/etc/hadoop/yarn-site.xml":
+    source => "puppet:///files/yarn-site.xml"
+  }
+
+  file { "/home/pi/.bashrc":
+    source => "puppet:///files/dotbashrc"
+  }
+
 }
 
 node 'master' {
@@ -74,10 +102,9 @@ node 'master' {
   include defaults
 
   # Configure networking
-  network::interface { 'wlan0':
-    wpa_ssid => 'Home2.4',
-    wpa_psk => 'giorgos-fenia-',
-    enable_dhcp => true
+  network::interface { 'eth1':
+    ensure => 'present',
+    method => 'dhcp'
   }
 
   network::interface { 'eth0':
@@ -122,7 +149,7 @@ node 'master' {
     chain    => 'POSTROUTING',
     jump     => 'MASQUERADE',
     proto    => 'all',
-    outiface => 'wlan0',
+    outiface => 'eth1',
     source   => '10.0.0.0/24',
     table    => 'nat'
   } ->
@@ -187,5 +214,6 @@ node /slave[0-9]*\.spark/ {
   file { "/home/pi/spark/conf/spark-env.sh":
     source => "puppet:///files/spark-env-slave.sh"
   }
+
 }
 
