@@ -102,9 +102,16 @@ node 'master' {
   include defaults
 
   # Configure networking
+  class { 'network':
+    gateway => '131.188.123.1'
+  }
+  
   network::interface { 'eth1':
     ensure => 'present',
-    method => 'dhcp'
+    ipaddress => '131.180.123.14',
+    netmask => '255.255.255.128',
+    gateway => '131.188.123.1',
+    dns_nameservers => '8.8.8.8'
   }
 
   network::interface { 'eth0':
@@ -140,6 +147,10 @@ node 'master' {
     "slave2.spark": ip => '10.0.0.3';
     "slave3.spark": ip => '10.0.0.4';
     "slave4.spark": ip => '10.0.0.5';
+  }
+
+  dnsmasq::dnsserver { 'dns':
+    ip => '8.8.8.8',
   }
 
   # NAT config
