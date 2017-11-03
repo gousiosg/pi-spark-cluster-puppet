@@ -7,29 +7,6 @@
 
 # On the Mac
 
-## Write images
-wget https://downloads.raspberrypi.org/raspbian_lite_latest
-diskutil list
-diskutil unmountDisk /dev/disk2
-sudo dd if=2017-04-10-raspbian-jessie-lite.img of=/dev/disk2 bs=1m
-
-## Enable SSH
-touch /Volumes/boot/ssh
-
-## Setup WiFi
-cat > /Volumes/boot/wpa_supplicant.conf << EOF
-ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-update_config=1
-
-network={
-  ssid=""
-  psk=""
-}
-EOF
-
-## Eject disk
-diskutil unmountDisk /dev/disk2
-
 ###
 ## On the cluster master node
 ###
@@ -41,13 +18,16 @@ sudo apt-get update && sudo apt-get upgrade -y
 echo "master.spark"|sudo tee /etc/hostname
 
 ## Install and config puppet
-sudo apt-get install puppet
-git@github.com:gousiosg/pi-spark-cluster-puppet.git cluster
-sudo gem install librarian-puppet
+sudo apt-get install puppet git curl screen software-properties-common build-essential pssh
+sudo adduser gousiosg
+sudo usermod -a -G sudo gousiosg
+scp -r gousiosg@dutihr.st.ewi.tudelft.nl:~/.ssh .
+#scp -r bdp1.ewi.tudelft.nl:~/cluster .
 
+sudo gem install librarian-puppet
 cd cluster
 librarian-puppet install
-sudo puppet apply nodes.pp
+sudo puppet apply --modulepath=modules nodes.pp
 
 # Puppet config according to
 # https://www.digitalocean.com/community/tutorials/how-to-install-puppet-to-manage-your-server-infrastructure
@@ -58,6 +38,9 @@ sudo puppet apply nodes.pp
 sudo apt-get install puppetmaster-passenger git
 sudo service apache2 stop
 sudo rm -rf /var/lib/puppet/ssl
+sudo ln -s /home/gousiosg/cluster/files /etc/puppet/files
+sudo ln -s /home/gousiosg/cluster/nodes.pp /etc/puppet/manifests/site.pp
+sudo ln -s /home/gousiosg/cluster/modules /etc/puppet/modules
 
 ## edit file /etc/puppet/puppet.conf
 vi /etc/puppet/puppet.conf
